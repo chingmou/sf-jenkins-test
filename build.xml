@@ -1,0 +1,83 @@
+<project name="Sample usage of Salesforce Ant tasks" default="test" basedir="." xmlns:sf="antlib:com.salesforce">
+
+  <property file="build.properties"/>
+  <property environment="env"/>
+
+  <macrodef name = "git">
+      <attribute name = "command" />
+      <attribute name = "dir" default = "" />
+      <element name = "args" optional = "true" />
+      <sequential>
+          <echo message = "git @{command}" />
+          <exec executable = "git" dir = "@{dir}">
+              <arg value = "@{command}" />
+              <args/>
+          </exec>
+      </sequential>
+  </macrodef>
+
+  <!-- Retrieve an unpackaged set of metadata from your org -->
+  <!-- The file retrieve/package.xml lists what is to be retrieved -->
+  <target name="retrieve">
+    <!-- Retrieve the contents into another directory -->
+    <sf:retrieve username="${sf.master.username}" password="${sf.master.password}" serverurl="${sf.serverurl}" retrieveTarget="retrieveUnpackaged" unpackaged="retrieve/package.xml"/>
+  </target>
+
+  <!-- Deploy the unpackaged set of metadata -->
+  <target name="clone">
+    <sf:deploy username="${sf.dev.username}" password="${sf.dev.password}" serverurl="${sf.serverurl}" deployRoot="../dev/src"/>
+  </target>
+
+  <target name="pushdev">
+    <git command = "checkout">
+      <args>
+        <arg value = "src/package.xml" />
+      </args>
+    </git>
+    <sf:deploy username="${sf.dev.username}" password="${sf.dev.password}" serverurl="${sf.serverurl}" deployRoot="/src"/>
+  </target>
+
+  <target name="pushmaster">
+    <git command = "checkout">
+      <args>
+        <arg value = "src/package.xml" />
+        <arg value = "src/objects/DocuSignAccountConfiguration__c.object" />
+      </args>
+    </git>
+    <sf:deploy username="${sf.master.username}" password="${sf.master.password}" serverurl="${sf.serverurl}" deployRoot="/src"/>
+  </target>
+
+  <!-- ==================================================================================================== -->
+  <!-- The following targets are used by Jenkins (for deploying code from GitHub to 91Demo[packaging ORG]). -->
+  <!-- ==================================================================================================== -->
+  <target name="clean"
+    description="Delete the deploy folder">
+    <echo>Cleaning the build: delete the deloy folder, call 'sf-package'...</echo>
+    <delete dir="${sf.package.folder}" />
+  </target>
+
+  <target name="init"
+    description="Create the Salesforce package folder"
+    depends="clean">
+    <echo>Initializing the build: create directory, call 'sf-package'... </echo>
+    <mkdir dir="${sf.package.folder}" />
+    <mkdir dir="${sf.source.folder}" />
+  </target>
+
+  <target name="package"
+    description="Run the deployment tool jar to create the Salesforce deployment package"
+    depends="init">
+    <echo>Packaing the build: run dfs-deployment-tool.jar to create the Salesforce deployment package...</echo>
+    <java jar="${sf.deploy.folder}/dfs-deployment-tool.jar" fork="true" />
+  </target>
+
+  <target name="deploy"
+    description="Deploy the sf-package to the 91Demo(dfs packaging org)" 
+    depends="package">
+    <echo>Deploying the Build: deploy sf-package to 91Demo(DFS Packaging Org)...</echo>
+    <sf:deploy username="${sf.deploy.username}" password="${sf.deploy.password}" serverurl="${sf.serverurl}" 
+      deployRoot="${sf.source.folder}" runAllTests="true" checkOnly="true" />
+  </target>
+<!-- ==================================================================================================== -->
+
+</project>
