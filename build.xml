@@ -75,7 +75,7 @@
     description="Deploy the sf-package to the 91Demo(dfs packaging org)" 
     depends="package">
     <echo>Deploying the Build: deploy sf-package to 91Demo(DFS Packaging Org)...</echo>
-    <git command = "pull" />
+    <git command = "fetch" />
     <git command = "reset --hard origin/master" />
     <sf:deploy username="${sf.deploy.username}" password="${sf.deploy.password}" serverurl="${sf.serverurl}" 
       deployRoot="${sf.source.folder}" runAllTests="true" checkOnly="false" />
