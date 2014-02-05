@@ -69,11 +69,6 @@
     depends="init">
     <echo>Packaing the build: run dfs-deployment-tool.jar to create the Salesforce deployment package...</echo>
     <git command = "fetch" />
-    <git command = "reset">
-      <args>
-        <arg value = "--hard origin/master" />
-      </args>      
-    </git>
     <java jar="${sf.deploy.folder}/dfs-deployment-tool.jar" fork="true" />
   </target>
 
