@@ -47,6 +47,11 @@
     <sf:deploy username="${sf.master.username}" password="${sf.master.password}" serverurl="${sf.serverurl}" deployRoot="/src"/>
   </target>
 
+    <!-- Retrieve metadata for all the packages specified under packageNames -->
+    <target name="retrievePkg">
+      <sf:retrieve username="${sf.deploy.username}" password="${sf.deploy.password}" serverurl="${sf.serverurl}" retrieveTarget="/package" packageNames="${sf.pkgName}"/>
+    </target>
+
   <!-- ==================================================================================================== -->
   <!-- The following targets are used by Jenkins (for deploying code from GitHub to 91Demo[packaging ORG]). -->
   <!-- ==================================================================================================== -->
@@ -62,6 +67,7 @@
     <echo>Initializing the build: create directory, call 'sf-package'... </echo>
     <mkdir dir="${sf.package.folder}" />
     <mkdir dir="${sf.source.folder}" />
+    <chmod dir="${sf.package.folder}" perm="777" />
   </target>
 
   <target name="package"
